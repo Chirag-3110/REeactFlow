@@ -1,0 +1,84 @@
+.admin-page-workflow{
+    text-align: center;
+    border-bottom: 2px solid black;
+}
+.btn{
+    background-color: #ddd;
+    border: 2px solid rgb(100, 100, 100);
+    color: black;
+    border-radius: 5px;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition: 0.3s;
+    width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 40px;
+    margin-bottom: 10px;
+}
+.btn:hover{
+    background-color: #00b7ff;
+    color: white;
+    box-shadow: 5px 5px 10px rgb(120, 120, 120);
+}
+.worflow-input-field{
+    width: 100%;
+    height: 40px;
+    color: black;
+    font-weight: bold;
+}
+.workflow-name-container{
+    width: 500px;
+    /* display: flex;
+    flex-direction: column; */
+    /* justify-self: center; */
+    font-weight: bold;
+    /* background-color: red; */
+    /* position: absolute; */
+    padding: 5px;
+    /* z-index: 2px; */
+}
+.buttons-container{
+    display: flex;
+}
+.title-input{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.admin-workflow-container{
+    display: flex;
+}
+.button-div{
+    width: 100%;
+    /* background-color: red; */
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    font-weight: bold;
+    flex-wrap: wrap;
+}
+.success {
+  border: 2px solid black;
+  background-color: white;
+  border-radius: 5px;
+  color: black;
+  font-size: 15px;
+  cursor: pointer;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  width: 120px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.success:hover {
+  background-color: #009dff;
+  color: rgb(255, 255, 255);
+  box-shadow: -2px 2px 20px rgb(85, 85, 85);
+}

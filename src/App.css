@@ -1,38 +1,118 @@
-.App {
-  text-align: center;
+.workflow-create-div{
+  /* background-color: cyan; */
+  width:500px;
+  margin: 5px; 
+  background-color: rgb(193, 195, 255);
+  /* padding: 10px; */
+  border-radius: 5px;
+  border: 2px solid black;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.workflow-input{
+  width: 200px;
+  height: 25px;
+  border: 2px solid black;
+  border-radius:5px;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.workflow-select{
+  width: 210px;
+  height: 25px;
+  border: 2px solid black;
+  border-radius: 2px;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.input-field-div{
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  font-weight: bold;
+}
+.accept-button {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition: 0.3s;
+  width:150px; 
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px; 
+  border:1px solid black;
+}
+
+.accept-button:hover {
+  background-color: #2864e5;
+  color: rgb(255, 255, 255);
+}
+.button-divs{
+  display: flex;
+  width: 90%;
+  justify-content: space-around;
+  padding: 10px;
+}
+.task-input-div{
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 5px;
+  background-color: #e0eaff;
+}
+.text-para{
+  width: 30%;
+  text-align: right;
+  margin-right: 20px;
+  font-weight: bold;
 }
 
-.App-link {
-  color: #61dafb;
+.user-id-field{
+  height: 25px;
+  margin-left: 20px;
+  border: 2px solid rgb(51, 51, 51);
+  border-radius: 5px;
+  color:black;
+  font-weight: bold;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.top-bar-container{
+  text-align: center;
+  background-color: #e0eaff;
+}
+.about-title{
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+h3{
+  background-color: #ffffff;
+  padding: 5px;
+  width: 100px;
+  margin-left: 20px;
+  box-shadow: 2px 2px rgb(224, 192, 192);
+}
+.detail-title{
+  font-weight: bold;
+  /* background-color: #2864e5; */
+  justify-content: right;
+}
+.title-pair-div{
+  display: flex;
+  /* background-color: #2864e5; */
+  width: 80%;
+  justify-content: space-between;
+}
+.flow-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+.container{
+  background-color: #e0eaff;
+  padding: 0px;
+  margin-top: 0px;
 }

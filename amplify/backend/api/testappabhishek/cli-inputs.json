@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "testappabhishek",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "D:\\react web\\reactflowapi\\amplify\\backend\\api\\testappabhishek\\schema.graphql",
+    "defaultAuthType": {
+      "mode": "API_KEY",
+      "expirationTime": 7
+    }
+  }
+}
