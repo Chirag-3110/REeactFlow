@@ -14,12 +14,12 @@ import { API } from 'aws-amplify';
 import * as queries from '../graphql/queries';
 import * as mutations from '../graphql/mutations';
 let initialNodes = [
-  {id:"A",data:{label:'A'},position: {x:160,y:80}},
-  {id:"B",data:{label:'B'},position: {x:-128,y:192}},
-  {id:"C",data:{label:'C'},position: {x:400,y:192}},
-  {id:"D",data:{label:'D'},position: {x:144,y:400}},
-  {id:"D",data:{label:"D"},position: {x:144,y:400}},
-  {id:"D",data:{label:"D"},position: {x:144,y:400}},
+  {id:"A",data:{label:'A',isRootNode:true},position: {x:160,y:80}},
+  {id:"B",data:{label:'B',isRootNode:false},position: {x:-128,y:192}},
+  {id:"C",data:{label:'C',isRootNode:false},position: {x:400,y:192}},
+  {id:"D",data:{label:'D',isRootNode:false},position: {x:144,y:400}},
+  {id:"D",data:{label:"D",isRootNode:false},position: {x:144,y:400}},
+  {id:"D",data:{label:"D",isRootNode:false},position: {x:144,y:400}},
 ];
 const initialEdges = [
   {id: 299.16019986476374, type: 'smoothstep'},
@@ -46,17 +46,11 @@ const WorkFow=()=>{
     const [NodeDataFields,showNodeDataFileds]=useState(false);
   //states for creating Nodes
     const [nodeName,setNodeName]=useState(null);
-    const [child,setChild]=useState(null);
     const [captureElementClick, setCaptureElementClick] = useState(true);
     const [selectedNode,setSelectedNode]=useState(null);
     const [isDraggable, setIsDraggable] = useState(false);
     const [isConnectable, setIsConnectable] = useState(false);
     const [flowBox,setFlowBox]=useState(false);
-  //state for updateing data
-    const [taskdesc,settaskDesc]=useState(null);
-    const [parentNode,setParentNode]=useState(null);
-    const [childNode,setChildNode]=useState(null);
-    const [updatePart,showUpdatPart]=useState(true);
   //state to check is node is present in db or not
     const [isPresent,setIsPresent]=useState(null);
   //function that add new nodes and edges when user creating it
@@ -79,82 +73,87 @@ const WorkFow=()=>{
         setFlowBox(false);
         showNodeDataFileds(true);
     }
-    const saveWorkFlow=()=>{
-      newInitialNode.push(newNode)
-      newInitialEdges.push(newEdge);
-      console.log([newInitialEdges,newInitialNode]);
-      showUpdatPart(false);
-    }
-    const createNode=()=>{
-     {
-      console.log(selectedNode);
-      newNode.length==0 ?
-      setNodeNodes([...newNode, {id:nodeName,data:{label:nodeName},type:'input',position: {x:0,y:0}}]):
-      setNodeNodes([...newNode, {id:nodeName,data:{label:nodeName},position: {x:100,y:100}}]);
-     }
-      console.log(newNode);
-     {
-      newEdge.length==0?
-      setNewEdge([...newEdge,{ id:Math.random()*Math.pow(10,16),type: 'smoothstep'}]):
-      setNewEdge([...newEdge,{id:Math.random()*Math.pow(10,16),type:'smoothstep', source:selectedNode.id, target:nodeName}]) 
-     }      
-    }
-  //state and function to getEvery selected node data
-    const [nodeBackEndData,setnodeBackEndData]=useState([]);
-    const getNodeData=async(event, node) => {
-      // setSelectedNode(node);
-      setParentNode(node.data.label)
-      console.log("Seleceted Node is"+parentNode);
-    }
-  //funtions that add node data after definition
-  //to the database
-    const addData=async()=>{
-      // console.log(parentNode,childNode,taskdesc)
-      const getWorkFlowData=await API.graphql({query:queries.nodeByNodeandWorkFlowName,variables:{NodeName:parentNode}});
-      // console.log(getWorkFlowData.data.nodeByNodeandWorkFlowName.items);
-      if(getWorkFlowData.data.nodeByNodeandWorkFlowName.items.length==0){
-        const workflowdetails={
-          workflowdefinitionid:"New Workflow",
-          NodeName: parentNode,
-          NextNodeName:childNode,
-          Description: taskdesc,
-          WorkFlowName: "project",
-          workflowWorkflowdefinitionsId: "project"
-        }
-        setnodeBackEndData(childNode);
-        const createNode=await API.graphql({query:mutations.createWorkflowDefinition,variables:{input:workflowdetails}});
-        console.log("Create");
-        console.log(createNode);
-      }
-      else{
-        setnodeBackEndData([...nodeBackEndData,childNode])
-        const updateNode={
-          id:getWorkFlowData.data.nodeByNodeandWorkFlowName.items[0].id,
-          NextNodeName:nodeBackEndData
-        }
-        const update=await API.graphql({query:mutations.updateWorkflowDefinition,variables:{input:updateNode}});
-        console.log("update");
-        console.log(update);
-      }
-    }
-  //states for workflow 
+  //states for data adding
     const [workFLowName,setWorkFlowName]=useState(null);
     const [workFlowDesc,setWorkFlowDesc]=useState(null);
-  //funtion to store final workflow in database
-    const finishWorkFlow=async()=>{
-      const workFlowDetails={
-        workflowName:workFLowName,
-        WorkFlowJSON:JSON.stringify({newNode,newEdge}),
-        WorkFlowDescription:workFlowDesc 
+    const saveWorkFlow=async()=>{
+      const workflowNamePresent=await API.graphql({query:queries.getWorkflow,variables:{workflowName:workFLowName}});
+      if(workflowNamePresent.data.getWorkflow==null){
+        for(var i=0;i<newNode.length;i++){
+          let childArray=[];
+            newEdge.map((edge)=>{
+              if(edge.source===newNode[i].id){
+                childArray.push(edge.target);
+              }
+            })
+            const nodeData=await API.graphql({
+              query:queries.nodeByNodeandWorkFlowName,
+              variables:{
+                NodeName:newNode[i].data.label,
+                WorkFlowName:{
+                  eq:workFLowName
+                }
+              }
+            });
+            if(nodeData.data.nodeByNodeandWorkFlowName.items.length==0){
+              const workflowDefinitionDetails={
+                  workflowdefinitionid:"New Workflow",
+                  NodeName: newNode[i].data.label,
+                  NextNodeName:childArray,
+                  Description: "First Description",
+                  WorkFlowName: workFLowName,
+                  workflowWorkflowdefinitionsId: workFLowName
+              }
+              const setNodeDataToBackend=await API.graphql({query:mutations.createWorkflowDefinition,variables:{input:workflowDefinitionDetails}})
+              console.log(setNodeDataToBackend.data.createWorkflowDefinition);
+            }
+            else{
+              console.log("Can't add data due to multiple entries");
+            }
+        }
+        const workFlowDetails={
+            workflowName:workFLowName,
+            WorkFlowJSON:JSON.stringify({newNode,newEdge}),
+            WorkFlowDescription:workFlowDesc 
+        }
+          const addWorkFlowDetails=await API.graphql({query:mutations.createWorkflow,variables:{input:workFlowDetails}})
+          console.log(addWorkFlowDetails);
       }
-      const addWorkFlowDetails=await API.graphql({query:mutations.createWorkflow,variables:{input:workFlowDetails}})
-      console.log(addWorkFlowDetails);
+      else{
+        console.log("Workflow  exists")
+      }
+    }
+    const [isNodePresent,setIsNodePresent]=useState(false);
+    const createNode=()=>{
+      console.log(selectedNode);
+      if(newNode.length==0){ 
+      setNodeNodes([...newNode, {id:nodeName,data:{label:nodeName,isRootNode:true},type:'input',position: {x:0,y:0}}])
+      }
+      else{
+        for(var i=0;i<newNode.length;i++){
+          if(nodeName==newNode[i].data.label){
+            setIsNodePresent(true);
+            console.log("again");
+          }
+        }
+        if(isNodePresent==true){
+          setNewEdge([...newEdge,{id:Math.random()*Math.pow(10,16),type:'smoothstep', source:selectedNode.id, target:nodeName}])
+          console.log("Edge");
+          setIsNodePresent(false);
+        }
+        else{
+          setNodeNodes([...newNode, {id:nodeName,data:{label:nodeName,isRootNode:false},position: {x:100,y:100}}]);
+          setNewEdge([...newEdge,{id:Math.random()*Math.pow(10,16),type:'smoothstep', source:selectedNode.id, target:nodeName}])
+          console.log("Nodee");
+      }
+    }    
+    }
+    const showjson=()=>{
+      console.log(JSON.stringify({newNode,newEdge}))
     }
     return(
         <>
            <div>
-             {
-               updatePart?
                <div style={{backgroundColor:"#e0eaff"}}>
                   <div className='admin-page-workflow'>
                     <h1>Super User Mode</h1>
@@ -219,6 +218,7 @@ const WorkFow=()=>{
                             <p>For Adding child node please select parent from workflow plane</p>
                             <div className="savebutton success" onClick={()=>saveWorkFlow()}><p>Save WorkFlow</p></div>
                             <div className="savebutton success" onClick={()=>createNode()}><p>Add Node</p></div>
+                            <div className="savebutton success" onClick={()=>showjson()}><p> Node</p></div>
                           </div>
                       </div>:null
                     } 
@@ -247,88 +247,7 @@ const WorkFow=()=>{
                       </ReactFlow>
                     </ReactFlowProvider>
                   </div>
-              </div>:
-               <div style={{width:'100%',height:'600px',backgroundColor:'#e0eaff'}} className="admin-workflow-container">
-               
-               <ReactFlowProvider >
-                 <ReactFlow
-                     defaultNodes={newNode}
-                     defaultEdges={newEdge}
-                     onNodesChange={onNodeChange}
-                     onEdgesChange={onNewEdgeChange}
-                     onInit={onInit}
-                     onConnect={onConnect}
-                     connectionLineStyle={{stroke:"black",strokeWidth:2}}
-                     connectionLineType="bezier"
-                     snapToGrid={true}
-                     onEdgeUpdate={onEdgeUpdate}
-                     snapGrid={[16,16]}
-                     onNodeClick={captureElementClick ? getNodeData : undefined}
-                     // onNodeDragStart={onNodeDragStart}
-                     // onNodeDragStop={onNodeDragStop}
-                     nodesConnectable={true}
-                     nodesDraggable={true}
-                 >
-                     <Background gap={20} color="black"/>
-                     <MiniMap nodeColor='black'/>
-                     <Controls/>
-                 </ReactFlow>
-               </ReactFlowProvider>
-               <div className="main-container" style={{width:'40%',height:'600px'}}>
-                  <div className="task-input-div">
-                      <p className="text-para">
-                          Parent Node Name:
-                      </p>
-                      <input className="user-id-field"
-                          value={parentNode}
-                          placeholder="Parent Node Name"
-                      />
-                  </div>
-                  <div className="task-input-div">
-                      <p className="text-para">
-                          Next Node Name:
-                      </p>
-                      <input className="user-id-field"
-                          onChange={(nextnode)=>setChildNode(nextnode.target.value)}
-                          placeholder="Next Node Name"
-                      />
-                  </div>
-                  <div className="task-input-div">
-                      <p className="text-para">
-                          Node Description:
-                      </p>
-                      <input className="user-id-field"
-                          onChange={(desc)=>settaskDesc(desc.target.value)}
-                          placeholder="Node Description"
-                      />
-                  </div>
-                  <div className="task-input-div">
-                      <p className="text-para">
-                        workflowdefinition:
-                      </p>
-                      <input className="user-id-field"
-                          value="New Workflow"
-                          placeholder=" workflowdefinition"
-                      />
-                  </div>
-                  <div>
-                  <div className='button-divs'>
-                      <div className='accept-button' 
-                          onClick={()=>addData()}
-                      >
-                          <p>Add Data</p>
-                      </div>
-                      <div className='accept-button'  
-                          onClick={()=>finishWorkFlow()}
-                      >
-                          <p>Finish</p>
-                      </div>
-                      </div>
-                  </div>
-              </div> 
-             </div>
-             
-             }
+               </div>
            </div>
         </>
     )
