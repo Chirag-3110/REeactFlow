@@ -1,0 +1,1331 @@
+{
+  "Parameters": {
+    "DynamoDBModelTableReadIOPS": {
+      "Type": "Number",
+      "Default": 5,
+      "Description": "The number of read IOPS the table should support."
+    },
+    "DynamoDBModelTableWriteIOPS": {
+      "Type": "Number",
+      "Default": 5,
+      "Description": "The number of write IOPS the table should support."
+    },
+    "DynamoDBBillingMode": {
+      "Type": "String",
+      "Default": "PAY_PER_REQUEST",
+      "AllowedValues": [
+        "PAY_PER_REQUEST",
+        "PROVISIONED"
+      ],
+      "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+    },
+    "DynamoDBEnablePointInTimeRecovery": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Description": "Whether to enable Point in Time Recovery on the table."
+    },
+    "DynamoDBEnableServerSideEncryption": {
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Description": "Enable server side encryption powered by KMS."
+    },
+    "referencetotransformerrootstackenv10C5A902Ref": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackGraphQLAPI20497F53ApiId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackS3DeploymentBucket7592718ARef": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowauth0FunctionQuerygetWorkflowauth0FunctionAppSyncFunction363A84A3FunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationcreateWorkflowinit0FunctionMutationcreateWorkflowinit0FunctionAppSyncFunctionA74B7521FunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationcreateWorkflowauth0FunctionMutationcreateWorkflowauth0FunctionAppSyncFunction48836C0BFunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationupdateWorkflowinit0FunctionMutationupdateWorkflowinit0FunctionAppSyncFunction9440F930FunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptiononCreateWorkflowauth0FunctionSubscriptiononCreateWorkflowauth0FunctionAppSyncFunctionEE77C9A3FunctionId": {
+      "Type": "String"
+    },
+    "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptionOnCreateWorkflowDataResolverFnSubscriptionOnCreateWorkflowDataResolverFnAppSyncFunctionD6E0A813FunctionId": {
+      "Type": "String"
+    }
+  },
+  "Conditions": {
+    "HasEnvironmentParameter": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+            },
+            "NONE"
+          ]
+        }
+      ]
+    },
+    "ShouldUseServerSideEncryption": {
+      "Fn::Equals": [
+        {
+          "Ref": "DynamoDBEnableServerSideEncryption"
+        },
+        "true"
+      ]
+    },
+    "ShouldUsePayPerRequestBilling": {
+      "Fn::Equals": [
+        {
+          "Ref": "DynamoDBBillingMode"
+        },
+        "PAY_PER_REQUEST"
+      ]
+    },
+    "ShouldUsePointInTimeRecovery": {
+      "Fn::Equals": [
+        {
+          "Ref": "DynamoDBEnablePointInTimeRecovery"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "WorkflowDefinitionTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "NodeName",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "WorkFlowName",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "workflowWorkflowdefinitionsId",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingMode": {
+          "Fn::If": [
+            "ShouldUsePayPerRequestBilling",
+            "PAY_PER_REQUEST",
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "byNodeName",
+            "KeySchema": [
+              {
+                "AttributeName": "NodeName",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "WorkFlowName",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "Fn::If": [
+                "ShouldUsePayPerRequestBilling",
+                {
+                  "Ref": "AWS::NoValue"
+                },
+                {
+                  "ReadCapacityUnits": {
+                    "Ref": "DynamoDBModelTableReadIOPS"
+                  },
+                  "WriteCapacityUnits": {
+                    "Ref": "DynamoDBModelTableWriteIOPS"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "IndexName": "gsi-Workflow.workflowdefinitions",
+            "KeySchema": [
+              {
+                "AttributeName": "workflowWorkflowdefinitionsId",
+                "KeyType": "HASH"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "Fn::If": [
+                "ShouldUsePayPerRequestBilling",
+                {
+                  "Ref": "AWS::NoValue"
+                },
+                {
+                  "ReadCapacityUnits": {
+                    "Ref": "DynamoDBModelTableReadIOPS"
+                  },
+                  "WriteCapacityUnits": {
+                    "Ref": "DynamoDBModelTableWriteIOPS"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "PointInTimeRecoverySpecification": {
+          "Fn::If": [
+            "ShouldUsePointInTimeRecovery",
+            {
+              "PointInTimeRecoveryEnabled": true
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "ProvisionedThroughput": {
+          "Fn::If": [
+            "ShouldUsePayPerRequestBilling",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "ReadCapacityUnits": {
+                "Ref": "DynamoDBModelTableReadIOPS"
+              },
+              "WriteCapacityUnits": {
+                "Ref": "DynamoDBModelTableWriteIOPS"
+              }
+            }
+          ]
+        },
+        "SSESpecification": {
+          "SSEEnabled": {
+            "Fn::If": [
+              "ShouldUseServerSideEncryption",
+              true,
+              false
+            ]
+          }
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
+        },
+        "TableName": {
+          "Fn::Join": [
+            "",
+            [
+              "WorkflowDefinition-",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "-",
+              {
+                "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+              }
+            ]
+          ]
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "WorkflowDefinitionIAMRole2DF5D27F": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "appsync.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "RoleName": {
+          "Fn::Join": [
+            "",
+            [
+              "WorkflowDefinitionIA19e9a8-",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "-",
+              {
+                "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "WorkflowDefinitionIAMRoleDefaultPolicy55DB6738": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "WorkflowDefinitionTable",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "WorkflowDefinitionTable",
+                          "Arn"
+                        ]
+                      },
+                      "/index/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "WorkflowDefinitionIAMRoleDefaultPolicy55DB6738",
+        "Roles": [
+          {
+            "Ref": "WorkflowDefinitionIAMRole2DF5D27F"
+          }
+        ]
+      }
+    },
+    "DynamoDBAccess71ABE5AE": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+                    {
+                      "tablename": {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "WorkflowDefinition-",
+                            {
+                              "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "-",
+                            {
+                              "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                            }
+                          ]
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+                    {
+                      "tablename": {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "WorkflowDefinition-",
+                            {
+                              "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "-",
+                            {
+                              "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                            }
+                          ]
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "DynamoDBAccess71ABE5AE",
+        "Roles": [
+          {
+            "Ref": "WorkflowDefinitionIAMRole2DF5D27F"
+          }
+        ]
+      }
+    },
+    "WorkflowDefinitionDataSource": {
+      "Type": "AWS::AppSync::DataSource",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "Name": "WorkflowDefinitionTable",
+        "Type": "AMAZON_DYNAMODB",
+        "DynamoDBConfig": {
+          "AwsRegion": {
+            "Ref": "AWS::Region"
+          },
+          "TableName": {
+            "Ref": "WorkflowDefinitionTable"
+          }
+        },
+        "ServiceRoleArn": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionIAMRole2DF5D27F",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionIAMRole2DF5D27F"
+      ]
+    },
+    "QueryGetWorkflowDefinitionDataResolverFnQueryGetWorkflowDefinitionDataResolverFnAppSyncFunctionE8D0A27C": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "QueryGetWorkflowDefinitionDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.getWorkflowDefinition.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.getWorkflowDefinition.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "GetWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "getWorkflowDefinition",
+        "TypeName": "Query",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowauth0FunctionQuerygetWorkflowauth0FunctionAppSyncFunction363A84A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "QueryGetWorkflowDefinitionDataResolverFnQueryGetWorkflowDefinitionDataResolverFnAppSyncFunctionE8D0A27C",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "QueryListWorkflowDefinitionsDataResolverFnQueryListWorkflowDefinitionsDataResolverFnAppSyncFunction110E7E02": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "QueryListWorkflowDefinitionsDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.listWorkflowDefinitions.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.listWorkflowDefinitions.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "ListWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "listWorkflowDefinitions",
+        "TypeName": "Query",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowauth0FunctionQuerygetWorkflowauth0FunctionAppSyncFunction363A84A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "QueryListWorkflowDefinitionsDataResolverFnQueryListWorkflowDefinitionsDataResolverFnAppSyncFunction110E7E02",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listWorkflowDefinitions\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "MutationCreateWorkflowDefinitionDataResolverFnMutationCreateWorkflowDefinitionDataResolverFnAppSyncFunction7AAD8A60": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "MutationCreateWorkflowDefinitionDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.createWorkflowDefinition.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.createWorkflowDefinition.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "CreateWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "createWorkflowDefinition",
+        "TypeName": "Mutation",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationcreateWorkflowinit0FunctionMutationcreateWorkflowinit0FunctionAppSyncFunctionA74B7521FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationcreateWorkflowauth0FunctionMutationcreateWorkflowauth0FunctionAppSyncFunction48836C0BFunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "MutationCreateWorkflowDefinitionDataResolverFnMutationCreateWorkflowDefinitionDataResolverFnAppSyncFunction7AAD8A60",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "MutationupdateWorkflowDefinitionauth0FunctionMutationupdateWorkflowDefinitionauth0FunctionAppSyncFunction2AE268C4": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "MutationupdateWorkflowDefinitionauth0Function",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.updateWorkflowDefinition.auth.1.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.updateWorkflowDefinition.auth.1.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "MutationUpdateWorkflowDefinitionDataResolverFnMutationUpdateWorkflowDefinitionDataResolverFnAppSyncFunctionDFC588AB": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "MutationUpdateWorkflowDefinitionDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.updateWorkflowDefinition.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.updateWorkflowDefinition.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "UpdateWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "updateWorkflowDefinition",
+        "TypeName": "Mutation",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowMutationupdateWorkflowinit0FunctionMutationupdateWorkflowinit0FunctionAppSyncFunction9440F930FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "MutationupdateWorkflowDefinitionauth0FunctionMutationupdateWorkflowDefinitionauth0FunctionAppSyncFunction2AE268C4",
+                "FunctionId"
+              ]
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "MutationUpdateWorkflowDefinitionDataResolverFnMutationUpdateWorkflowDefinitionDataResolverFnAppSyncFunctionDFC588AB",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "MutationdeleteWorkflowDefinitionauth0FunctionMutationdeleteWorkflowDefinitionauth0FunctionAppSyncFunctionA944D53A": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "MutationdeleteWorkflowDefinitionauth0Function",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.deleteWorkflowDefinition.auth.1.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.deleteWorkflowDefinition.auth.1.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "MutationDeleteWorkflowDefinitionDataResolverFnMutationDeleteWorkflowDefinitionDataResolverFnAppSyncFunctionA8AEC856": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "MutationDeleteWorkflowDefinitionDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.deleteWorkflowDefinition.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Mutation.deleteWorkflowDefinition.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "DeleteWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "deleteWorkflowDefinition",
+        "TypeName": "Mutation",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Fn::GetAtt": [
+                "MutationdeleteWorkflowDefinitionauth0FunctionMutationdeleteWorkflowDefinitionauth0FunctionAppSyncFunctionA944D53A",
+                "FunctionId"
+              ]
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "MutationDeleteWorkflowDefinitionDataResolverFnMutationDeleteWorkflowDefinitionDataResolverFnAppSyncFunctionA8AEC856",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "SubscriptiononCreateWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "onCreateWorkflowDefinition",
+        "TypeName": "Subscription",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptiononCreateWorkflowauth0FunctionSubscriptiononCreateWorkflowauth0FunctionAppSyncFunctionEE77C9A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptionOnCreateWorkflowDataResolverFnSubscriptionOnCreateWorkflowDataResolverFnAppSyncFunctionD6E0A813FunctionId"
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "SubscriptiononUpdateWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "onUpdateWorkflowDefinition",
+        "TypeName": "Subscription",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptiononCreateWorkflowauth0FunctionSubscriptiononCreateWorkflowauth0FunctionAppSyncFunctionEE77C9A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptionOnCreateWorkflowDataResolverFnSubscriptionOnCreateWorkflowDataResolverFnAppSyncFunctionD6E0A813FunctionId"
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "SubscriptiononDeleteWorkflowDefinitionResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "onDeleteWorkflowDefinition",
+        "TypeName": "Subscription",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptiononCreateWorkflowauth0FunctionSubscriptiononCreateWorkflowauth0FunctionAppSyncFunctionEE77C9A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowSubscriptionOnCreateWorkflowDataResolverFnSubscriptionOnCreateWorkflowDataResolverFnAppSyncFunctionD6E0A813FunctionId"
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteWorkflowDefinition\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "QueryNodeByNodeandWorkFlowNameDataResolverFnQueryNodeByNodeandWorkFlowNameDataResolverFnAppSyncFunction56FB1DE5": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "WorkflowDefinitionDataSource",
+            "Name"
+          ]
+        },
+        "FunctionVersion": "2018-05-29",
+        "Name": "QueryNodeByNodeandWorkFlowNameDataResolverFn",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.nodeByNodeandWorkFlowName.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.nodeByNodeandWorkFlowName.res.vtl"
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "WorkflowDefinitionDataSource"
+      ]
+    },
+    "QuerynodeByNodeandWorkFlowNameResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "nodeByNodeandWorkFlowName",
+        "TypeName": "Query",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowauth0FunctionQuerygetWorkflowauth0FunctionAppSyncFunction363A84A3FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackWorkflowNestedStackWorkflowNestedStackResource0D642E76OutputstransformerrootstackWorkflowQuerygetWorkflowpostAuth0FunctionQuerygetWorkflowpostAuth0FunctionAppSyncFunction525087F5FunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "QueryNodeByNodeandWorkFlowNameDataResolverFnQueryNodeByNodeandWorkFlowNameDataResolverFnAppSyncFunction56FB1DE5",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"nodeByNodeandWorkFlowName\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "WorkflowDefinitionTable"
+              },
+              "\"))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    }
+  },
+  "Outputs": {
+    "GetAttWorkflowDefinitionTableStreamArn": {
+      "Description": "Your DynamoDB table StreamArn.",
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkflowDefinitionTable",
+          "StreamArn"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            ":",
+            [
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "GetAtt:WorkflowDefinitionTable:StreamArn"
+            ]
+          ]
+        }
+      }
+    },
+    "GetAttWorkflowDefinitionTableName": {
+      "Description": "Your DynamoDB table name.",
+      "Value": {
+        "Ref": "WorkflowDefinitionTable"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            ":",
+            [
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "GetAtt:WorkflowDefinitionTable:Name"
+            ]
+          ]
+        }
+      }
+    },
+    "GetAttWorkflowDefinitionDataSourceName": {
+      "Description": "Your model DataSource name.",
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkflowDefinitionDataSource",
+          "Name"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            ":",
+            [
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "GetAtt:WorkflowDefinitionDataSource:Name"
+            ]
+          ]
+        }
+      }
+    },
+    "transformerrootstackWorkflowDefinitionWorkflowDefinitionDataSource5E789D4FName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkflowDefinitionDataSource",
+          "Name"
+        ]
+      }
+    },
+    "transformerrootstackWorkflowDefinitionWorkflowDefinitionTable2F2D688CRef": {
+      "Value": {
+        "Ref": "WorkflowDefinitionTable"
+      }
+    }
+  }
+}
