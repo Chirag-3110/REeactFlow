@@ -4,6 +4,9 @@ type Workflow {
   workflowdefinitions(filter: ModelWorkflowDefinitionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelWorkflowDefinitionConnection
   WorkFlowJSON: AWSJSON!
   WorkFlowDescription: String!
+  SaveAsDraft: Boolean!
+  CreatedBy: String!
+  OwnedBy: String!
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -13,6 +16,7 @@ type WorkflowDefinition {
   NodeName: String!
   NextNodeName: [String!]!
   Description: String!
+  isRootNode: Boolean!
   WorkFlowName: String!
   id: ID!
   createdAt: AWSDateTime!
@@ -120,6 +124,9 @@ input ModelWorkflowFilterInput {
   workflowName: ModelStringInput
   WorkFlowJSON: ModelStringInput
   WorkFlowDescription: ModelStringInput
+  SaveAsDraft: ModelBooleanInput
+  CreatedBy: ModelStringInput
+  OwnedBy: ModelStringInput
   and: [ModelWorkflowFilterInput]
   or: [ModelWorkflowFilterInput]
   not: ModelWorkflowFilterInput
@@ -136,6 +143,9 @@ type Query {
 input ModelWorkflowConditionInput {
   WorkFlowJSON: ModelStringInput
   WorkFlowDescription: ModelStringInput
+  SaveAsDraft: ModelBooleanInput
+  CreatedBy: ModelStringInput
+  OwnedBy: ModelStringInput
   and: [ModelWorkflowConditionInput]
   or: [ModelWorkflowConditionInput]
   not: ModelWorkflowConditionInput
@@ -145,12 +155,18 @@ input CreateWorkflowInput {
   workflowName: String!
   WorkFlowJSON: AWSJSON!
   WorkFlowDescription: String!
+  SaveAsDraft: Boolean!
+  CreatedBy: String!
+  OwnedBy: String!
 }
 
 input UpdateWorkflowInput {
   workflowName: String!
   WorkFlowJSON: AWSJSON
   WorkFlowDescription: String
+  SaveAsDraft: Boolean
+  CreatedBy: String
+  OwnedBy: String
 }
 
 input DeleteWorkflowInput {
@@ -185,6 +201,7 @@ input ModelWorkflowDefinitionFilterInput {
   NodeName: ModelStringInput
   NextNodeName: ModelStringInput
   Description: ModelStringInput
+  isRootNode: ModelBooleanInput
   WorkFlowName: ModelStringInput
   and: [ModelWorkflowDefinitionFilterInput]
   or: [ModelWorkflowDefinitionFilterInput]
@@ -197,6 +214,7 @@ input ModelWorkflowDefinitionConditionInput {
   NodeName: ModelStringInput
   NextNodeName: ModelStringInput
   Description: ModelStringInput
+  isRootNode: ModelBooleanInput
   WorkFlowName: ModelStringInput
   and: [ModelWorkflowDefinitionConditionInput]
   or: [ModelWorkflowDefinitionConditionInput]
@@ -209,6 +227,7 @@ input CreateWorkflowDefinitionInput {
   NodeName: String!
   NextNodeName: [String!]!
   Description: String!
+  isRootNode: Boolean!
   WorkFlowName: String!
   id: ID
   workflowWorkflowdefinitionsId: ID
@@ -219,6 +238,7 @@ input UpdateWorkflowDefinitionInput {
   NodeName: String
   NextNodeName: [String!]
   Description: String
+  isRootNode: Boolean
   WorkFlowName: String
   id: ID!
   workflowWorkflowdefinitionsId: ID

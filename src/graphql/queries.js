@@ -10,6 +10,9 @@ export const getWorkflow = /* GraphQL */ `
       }
       WorkFlowJSON
       WorkFlowDescription
+      SaveAsDraft
+      CreatedBy
+      OwnedBy
       createdAt
       updatedAt
     }
@@ -34,6 +37,9 @@ export const listWorkflows = /* GraphQL */ `
         workflowName
         WorkFlowJSON
         WorkFlowDescription
+        SaveAsDraft
+        CreatedBy
+        OwnedBy
         createdAt
         updatedAt
       }
@@ -48,6 +54,7 @@ export const getWorkflowDefinition = /* GraphQL */ `
       NodeName
       NextNodeName
       Description
+      isRootNode
       WorkFlowName
       id
       createdAt
@@ -72,6 +79,7 @@ export const listWorkflowDefinitions = /* GraphQL */ `
         NodeName
         NextNodeName
         Description
+        isRootNode
         WorkFlowName
         id
         createdAt
@@ -104,6 +112,7 @@ export const nodeByNodeandWorkFlowName = /* GraphQL */ `
         NodeName
         NextNodeName
         Description
+        isRootNode
         WorkFlowName
         id
         createdAt

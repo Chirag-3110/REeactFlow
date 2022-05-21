@@ -13,6 +13,9 @@ export const createWorkflow = /* GraphQL */ `
       }
       WorkFlowJSON
       WorkFlowDescription
+      SaveAsDraft
+      CreatedBy
+      OwnedBy
       createdAt
       updatedAt
     }
@@ -30,6 +33,9 @@ export const updateWorkflow = /* GraphQL */ `
       }
       WorkFlowJSON
       WorkFlowDescription
+      SaveAsDraft
+      CreatedBy
+      OwnedBy
       createdAt
       updatedAt
     }
@@ -47,6 +53,9 @@ export const deleteWorkflow = /* GraphQL */ `
       }
       WorkFlowJSON
       WorkFlowDescription
+      SaveAsDraft
+      CreatedBy
+      OwnedBy
       createdAt
       updatedAt
     }
@@ -62,6 +71,7 @@ export const createWorkflowDefinition = /* GraphQL */ `
       NodeName
       NextNodeName
       Description
+      isRootNode
       WorkFlowName
       id
       createdAt
@@ -80,6 +90,7 @@ export const updateWorkflowDefinition = /* GraphQL */ `
       NodeName
       NextNodeName
       Description
+      isRootNode
       WorkFlowName
       id
       createdAt
@@ -98,6 +109,7 @@ export const deleteWorkflowDefinition = /* GraphQL */ `
       NodeName
       NextNodeName
       Description
+      isRootNode
       WorkFlowName
       id
       createdAt
